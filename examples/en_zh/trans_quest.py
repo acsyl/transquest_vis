@@ -24,8 +24,6 @@ if not os.path.exists(TEMP_DIRECTORY):
 # train = pd.read_csv(TRAIN_FILE, sep='\t', error_bad_lines=False)
 # test = pd.read_csv(TEST_FILE, sep='\t', error_bad_lines=False)
 
-train = pd.read_csv(TRAIN_FILE, sep='\t', error_bad_lines=False)
-test = pd.read_csv(TEST_FILE, sep='\t', error_bad_lines=False)
 with open("data/en-zh/train.pickle", 'rb') as f:  
     train = pickle.loads(f.read())
 
@@ -33,10 +31,11 @@ with open("data/en-zh/test.pickle", 'rb') as f:
     test = pickle.loads(f.read())
 
 train = train[['original', 'translation', 'score']]
+print(train)
 test = test[['original', 'translation', 'score']]
 
-train = train.rename(columns={'original': 'text_a', 'translation': 'text_b', 'z_mean': 'labels'}).dropna()
-test = test.rename(columns={'original': 'text_a', 'translation': 'text_b', 'z_mean': 'labels'}).dropna()
+train = train.rename(columns={'original': 'text_a', 'translation': 'text_b', 'score': 'labels'}).dropna()
+test = test.rename(columns={'original': 'text_a', 'translation': 'text_b', 'score': 'labels'}).dropna()
 
 train = fit(train, 'labels')
 test = fit(test, 'labels')
