@@ -4,6 +4,7 @@ import shutil
 import numpy as np
 import pandas as pd
 import torch
+import pickle
 from sklearn.metrics import mean_absolute_error
 from sklearn.model_selection import train_test_split
 
@@ -17,14 +18,22 @@ from examples.en_zh.transformer_config import TEMP_DIRECTORY, MODEL_TYPE, MODEL_
 if not os.path.exists(TEMP_DIRECTORY):
     os.makedirs(TEMP_DIRECTORY)
 
-TRAIN_FILE = "data/en-zh/train.enzh.df.short.tsv"
-TEST_FILE = "data/en-zh/dev.enzh.df.short.tsv"
+# TRAIN_FILE = "data/en-zh/train.enzh.df.short.tsv"
+# TEST_FILE = "data/en-zh/dev.enzh.df.short.tsv"
+
+# train = pd.read_csv(TRAIN_FILE, sep='\t', error_bad_lines=False)
+# test = pd.read_csv(TEST_FILE, sep='\t', error_bad_lines=False)
 
 train = pd.read_csv(TRAIN_FILE, sep='\t', error_bad_lines=False)
 test = pd.read_csv(TEST_FILE, sep='\t', error_bad_lines=False)
+with open("data/en-zh/train.pickle", 'rb') as f:  
+    train = pickle.loads(f.read())
 
-train = train[['original', 'translation', 'z_mean']]
-test = test[['original', 'translation', 'z_mean']]
+with open("data/en-zh/test.pickle", 'rb') as f:  
+    test = pickle.loads(f.read())
+
+train = train[['original', 'translation', 'score']]
+test = test[['original', 'translation', 'score']]
 
 train = train.rename(columns={'original': 'text_a', 'translation': 'text_b', 'z_mean': 'labels'}).dropna()
 test = test.rename(columns={'original': 'text_a', 'translation': 'text_b', 'z_mean': 'labels'}).dropna()
