@@ -49,7 +49,7 @@ if transformer_config["evaluate_during_training"]:
             if os.path.exists(transformer_config['output_dir']) and os.path.isdir(transformer_config['output_dir']):
                 shutil.rmtree(transformer_config['output_dir'])
 
-            model = QuestModel(MODEL_TYPE, MODEL_NAME, num_labels=2, use_cuda=torch.cuda.is_available(),
+            model = QuestModel(MODEL_TYPE, MODEL_NAME, num_labels=1, use_cuda=torch.cuda.is_available(),
                                args=transformer_config)
             train, eval_df = train_test_split(train, test_size=0.1, random_state=SEED*i)
             model.train_model(train, eval_df=eval_df)
@@ -60,18 +60,18 @@ if transformer_config["evaluate_during_training"]:
         test['predictions'] = test_preds.mean(axis=1)
 
     else:
-        model = QuestModel(MODEL_TYPE, MODEL_NAME, num_labels=2, use_cuda=torch.cuda.is_available(),
+        model = QuestModel(MODEL_TYPE, MODEL_NAME, num_labels=1, use_cuda=torch.cuda.is_available(),
                            args=transformer_config)
         train, eval_df = train_test_split(train, test_size=0.1, random_state=SEED)
-        model.train_model(train, eval_df=eval_df)
-        model = QuestModel(MODEL_TYPE, transformer_config["best_model_dir"], num_labels=2,
+        model.train_model(train, eval_df=eval_df, acc=sklearn.metrics.accuracy_score)
+        model = QuestModel(MODEL_TYPE, transformer_config["best_model_dir"], num_labels=1,
                            use_cuda=torch.cuda.is_available(), args=transformer_config)
         result, model_outputs, wrong_predictions = model.eval_model(test,acc=sklearn.metrics.accuracy_score)
         test['predictions'] = model_outputs
 
 
 else:
-    model = QuestModel(MODEL_TYPE, MODEL_NAME, num_labels=2, use_cuda=torch.cuda.is_available(),
+    model = QuestModel(MODEL_TYPE, MODEL_NAME, num_labels=1, use_cuda=torch.cuda.is_available(),
                        args=transformer_config)
     model.train_model(train)
     result, model_outputs, wrong_predictions = model.eval_model(test,acc=sklearn.metrics.accuracy_score)
