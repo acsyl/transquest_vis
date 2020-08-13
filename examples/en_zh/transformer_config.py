@@ -33,7 +33,7 @@ transformer_config = {
     'save_steps': 300,
     "no_cache": False,
     'save_model_every_epoch': True,
-    'n_fold': 5,
+    'n_fold': 1,
     'evaluate_during_training': True,
     'evaluate_during_training_steps': 300,
     "evaluate_during_training_verbose": True,
@@ -54,11 +54,11 @@ transformer_config = {
     'wandb_project': None,
     'wandb_kwargs': {},
 
-    "use_early_stopping": True,
+    "use_early_stopping": False,
     "early_stopping_patience": 10,
     "early_stopping_delta": 0,
     "early_stopping_metric": "eval_loss",
-    "early_stopping_metric_minimize": True,
+    "early_stopping_metric_minimize": False,
 
     "manual_seed": 777,
 

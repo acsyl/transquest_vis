@@ -3,8 +3,8 @@ from multiprocessing import cpu_count
 SEED = 777
 TEMP_DIRECTORY = "temp_lt/data"
 RESULT_FILE = "result.tsv"
-MODEL_TYPE = "xlmroberta"
-MODEL_NAME = "xlm-roberta-large"
+MODEL_TYPE = "bert"
+MODEL_NAME = "bert-base-multilingual-cased"
 
 global_config = {
     'output_dir': 'temp_lt/outputs/',
@@ -14,7 +14,7 @@ global_config = {
     'fp16': False,
     'fp16_opt_level': 'O1',
     'max_seq_length': 128,
-    'train_batch_size': 8,
+    'train_batch_size': 2,
     'gradient_accumulation_steps': 1,
     'eval_batch_size': 1024,
     'num_train_epochs': 3,
@@ -50,7 +50,7 @@ global_config = {
     'wandb_project': None,
     'wandb_kwargs': {},
 
-    "use_early_stopping": True,
+    "use_early_stopping": False,
     "early_stopping_patience": 10,
     "early_stopping_delta": 0,
     "early_stopping_metric": "eval_loss",

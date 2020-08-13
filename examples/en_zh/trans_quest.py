@@ -7,7 +7,7 @@ import torch
 import pickle
 from sklearn.metrics import mean_absolute_error
 from sklearn.model_selection import train_test_split
-
+import sklearn
 from algo.transformers.evaluation import pearson_corr, spearman_corr
 from algo.transformers.run_model import QuestModel
 from examples.common.util.draw import draw_scatterplot
@@ -49,39 +49,32 @@ if transformer_config["evaluate_during_training"]:
             if os.path.exists(transformer_config['output_dir']) and os.path.isdir(transformer_config['output_dir']):
                 shutil.rmtree(transformer_config['output_dir'])
 
-            model = QuestModel(MODEL_TYPE, MODEL_NAME, num_labels=1, use_cuda=torch.cuda.is_available(),
+            model = QuestModel(MODEL_TYPE, MODEL_NAME, num_labels=2, use_cuda=torch.cuda.is_available(),
                                args=transformer_config)
             train, eval_df = train_test_split(train, test_size=0.1, random_state=SEED*i)
-            model.train_model(train, eval_df=eval_df, pearson_corr=pearson_corr, spearman_corr=spearman_corr,
-                              mae=mean_absolute_error)
+            model.train_model(train, eval_df=eval_df)
             model = QuestModel(MODEL_TYPE, transformer_config["best_model_dir"], num_labels=1, use_cuda=torch.cuda.is_available(), args=transformer_config)
-            result, model_outputs, wrong_predictions = model.eval_model(test, pearson_corr=pearson_corr,
-                                                                        spearman_corr=spearman_corr,
-                                                                        mae=mean_absolute_error)
+            result, model_outputs, wrong_predictions = model.eval_model(test, acc=sklearn.metrics.accuracy_score)
             test_preds[:, i] = model_outputs
 
         test['predictions'] = test_preds.mean(axis=1)
 
     else:
-        model = QuestModel(MODEL_TYPE, MODEL_NAME, num_labels=1, use_cuda=torch.cuda.is_available(),
+        model = QuestModel(MODEL_TYPE, MODEL_NAME, num_labels=2, use_cuda=torch.cuda.is_available(),
                            args=transformer_config)
         train, eval_df = train_test_split(train, test_size=0.1, random_state=SEED)
-        model.train_model(train, eval_df=eval_df, pearson_corr=pearson_corr, spearman_corr=spearman_corr,
-                          mae=mean_absolute_error)
-        model = QuestModel(MODEL_TYPE, transformer_config["best_model_dir"], num_labels=1,
+        model.train_model(train, eval_df=eval_df)
+        model = QuestModel(MODEL_TYPE, transformer_config["best_model_dir"], num_labels=2,
                            use_cuda=torch.cuda.is_available(), args=transformer_config)
-        result, model_outputs, wrong_predictions = model.eval_model(test, pearson_corr=pearson_corr,
-                                                                    spearman_corr=spearman_corr,
-                                                                    mae=mean_absolute_error)
+        result, model_outputs, wrong_predictions = model.eval_model(test,acc=sklearn.metrics.accuracy_score)
         test['predictions'] = model_outputs
 
 
 else:
-    model = QuestModel(MODEL_TYPE, MODEL_NAME, num_labels=1, use_cuda=torch.cuda.is_available(),
+    model = QuestModel(MODEL_TYPE, MODEL_NAME, num_labels=2, use_cuda=torch.cuda.is_available(),
                        args=transformer_config)
-    model.train_model(train, pearson_corr=pearson_corr, spearman_corr=spearman_corr, mae=mean_absolute_error)
-    result, model_outputs, wrong_predictions = model.eval_model(test, pearson_corr=pearson_corr,
-                                                                spearman_corr=spearman_corr, mae=mean_absolute_error)
+    model.train_model(train)
+    result, model_outputs, wrong_predictions = model.eval_model(test,acc=sklearn.metrics.accuracy_score)
     test['predictions'] = model_outputs
 
 
