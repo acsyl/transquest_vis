@@ -755,7 +755,12 @@ class QuestModel:
 
         extra_metrics = {}
         for metric, func in kwargs.items():
-            extra_metrics[metric] = func(labels, preds)
+          for i in range(len(preds)):
+            if preds[i] > 0.5:
+              preds[i] = 1
+            else:
+              preds[i] = 0
+          extra_metrics[metric] = func(labels, preds)
 
         mismatched = labels != preds
 

@@ -60,14 +60,17 @@ class BertForSequenceClassification(BertPreTrainedModel):
         outputs = (logits,) + outputs[2:]  # add hidden states and attention if they are here
 
         if labels is not None:
-            if self.num_labels == 1:
-                #  We are doing regression
-                # logits = torch.sigmoid(logits)
-                loss_fct = nn.BCEWithLogitsLoss()
-                loss = loss_fct(logits.view(-1), labels.view(-1))
-            else:
-                loss_fct = CrossEntropyLoss(weight=self.weight)
-                loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
-            outputs = (loss,) + outputs
+            # if self.num_labels == 1:
+            #     #  We are doing regression
+            #     # logits = torch.sigmoid(logits)
+            #     loss_fct = nn.BCEWithLogitsLoss()
+            #     loss = loss_fct(logits.view(-1), labels.view(-1))
+            #     print(logits.view(-1))
+            # else:
+              loss_fct = nn.BCEWithLogitsLoss(weight=self.weight)
+              # print(logits.view(-1, self.num_labels))
+              # print(labels.view(-1).long())
+              loss = loss_fct(logits.view(-1), labels.view(-1))
+              outputs = (loss,) + outputs
 
         return outputs  # (loss), logits, (hidden_states), (attentions)
