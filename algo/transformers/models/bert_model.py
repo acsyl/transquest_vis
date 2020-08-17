@@ -1,7 +1,7 @@
 import torch.nn as nn
 from torch.nn import CrossEntropyLoss, MSELoss
 from transformers.modeling_bert import BertPreTrainedModel, BertModel
-
+import torch.nn.functional as F
 
 class BertForSequenceClassification(BertPreTrainedModel):
     r"""
@@ -56,6 +56,7 @@ class BertForSequenceClassification(BertPreTrainedModel):
 
         pooled_output = self.dropout(pooled_output)
         logits = self.classifier(pooled_output)
+        logits = F.sigmoid(logits)
 
         outputs = (logits,) + outputs[2:]  # add hidden states and attention if they are here
 
@@ -67,7 +68,7 @@ class BertForSequenceClassification(BertPreTrainedModel):
             #     loss = loss_fct(logits.view(-1), labels.view(-1))
             #     print(logits.view(-1))
             # else:
-              loss_fct = nn.BCEWithLogitsLoss(weight=self.weight)
+              loss_fct = nn.BCELoss(weight=self.weight)
               # print(logits.view(-1, self.num_labels))
               # print(labels.view(-1).long())
               loss = loss_fct(logits.view(-1), labels.view(-1))
