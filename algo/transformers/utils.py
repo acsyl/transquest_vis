@@ -28,7 +28,7 @@ csv.field_size_limit(2147483647)
 class InputExample(object):
     """A single training/test example for simple sequence classification."""
 
-    def __init__(self, guid, text_a, text_b=None, label=None):
+    def __init__(self, guid, text_a, text_b=None, label=None, vis = None):
         """
         Constructs a InputExample.
 
@@ -46,16 +46,18 @@ class InputExample(object):
         self.text_a = text_a
         self.text_b = text_b
         self.label = label
+        self.vis = vis
 
 
 class InputFeatures(object):
     """A single set of features of data."""
 
-    def __init__(self, input_ids, input_mask, segment_ids, label_id):
+    def __init__(self, input_ids, input_mask, segment_ids, label_id, vis_id):
         self.input_ids = input_ids
         self.input_mask = input_mask
         self.segment_ids = segment_ids
         self.label_id = label_id
+        self.vis_id = vis_id
 
 
 def convert_example_to_feature(
@@ -145,12 +147,12 @@ def convert_example_to_feature(
     #     label_id = float(example.label)
     # else:
     #     raise KeyError(output_mode)
-
     return InputFeatures(
         input_ids=input_ids,
         input_mask=input_mask,
         segment_ids=segment_ids,
-        label_id=example.label
+        label_id=example.label,
+        vis_id = example.vis
     )
 
 
@@ -241,13 +243,13 @@ def convert_example_to_feature_sliding_window(
         #     label_id = float(example.label)
         # else:
         #     raise KeyError(output_mode)
-
         input_features.append(
             InputFeatures(
                 input_ids=input_ids,
                 input_mask=input_mask,
                 segment_ids=segment_ids,
-                label_id=example.label
+                label_id=example.label,
+                vis = example.vis
             )
         )
 
@@ -284,11 +286,9 @@ def convert_examples_to_features(
             - True (XLNet/GPT pattern): A + [SEP] + B + [SEP] + [CLS]
         `cls_token_segment_id` define the segment id associated to the CLS token (0 for BERT, 2 for XLNet)
     """
-
     examples = [(example, max_seq_length, tokenizer, output_mode, cls_token_at_end, cls_token, sep_token,
                  cls_token_segment_id, pad_on_left, pad_token_segment_id, sep_token_extra, multi_label, stride) for
                 example in examples]
-
     if use_multiprocessing:
         if sliding_window:
             logging.info('sliding_window enabled')
@@ -312,7 +312,6 @@ def convert_examples_to_features(
             logging.info(f'{len(features)} features created from {len(examples)} samples.')
         else:
             features = [convert_example_to_feature(example) for example in tqdm(examples, disable=silent)]
-
     return features
 
 

@@ -213,20 +213,19 @@ class QuestModel:
             )
 
         self._move_model_to_device()
-
         if "text_a" in train_df.columns and "text_b" in train_df.columns:
             train_examples = [
-                InputExample(i, text_a, text_b, label)
-                for i, (text_a, text_b, label) in enumerate(
-                    zip(train_df["text_a"], train_df["text_b"], train_df["labels"])
+                InputExample(i, text_a, text_b, label, vis)
+                for i, (text_a, text_b, label, vis) in enumerate(
+                    zip(train_df["text_a"], train_df["text_b"], train_df["labels"], train_df["vis"])
                 )
             ]
         else:
             raise ValueError(
                 "Passed DataFrame is not in the correct format. Please rename your columns to text_a, text_b and labels"
             )
-
         train_dataset = self.load_and_cache_examples(train_examples, verbose=verbose)
+        print(train_dataset)
 
         os.makedirs(output_dir, exist_ok=True)
 
@@ -541,10 +540,11 @@ class QuestModel:
                 for i, (text, label) in enumerate(zip(eval_df["text"], eval_df["labels"]))
             ]
         elif "text_a" in eval_df.columns and "text_b" in eval_df.columns:
+            # print("snjdchsidhsiooi")
             eval_examples = [
-                InputExample(i, text_a, text_b, label)
-                for i, (text_a, text_b, label) in enumerate(
-                    zip(eval_df["text_a"], eval_df["text_b"], eval_df["labels"])
+                InputExample(i, text_a, text_b, label, vis)
+                for i, (text_a, text_b, label, vis) in enumerate(
+                    zip(eval_df["text_a"], eval_df["text_b"], eval_df["labels"],eval_df["vis"])
                 )
             ]
         else:
@@ -718,18 +718,17 @@ class QuestModel:
         if args["sliding_window"] and evaluate:
             window_counts = [len(sample) for sample in features]
             features = [feature for feature_set in features for feature in feature_set]
-
+        # for i in features:
+        #   print(i.vis_id)
         all_input_ids = torch.tensor([f.input_ids for f in features], dtype=torch.long)
         all_input_mask = torch.tensor([f.input_mask for f in features], dtype=torch.long)
         all_segment_ids = torch.tensor([f.segment_ids for f in features], dtype=torch.long)
-
+        all_vis = torch.tensor([f.vis_id for f in features])
         if output_mode == "classification":
             all_label_ids = torch.tensor([f.label_id for f in features], dtype=torch.long)
         elif output_mode == "regression":
-            all_label_ids = torch.tensor([f.label_id for f in features], dtype=torch.float)
-
-        dataset = TensorDataset(all_input_ids, all_input_mask, all_segment_ids, all_label_ids)
-
+            all_label_ids = torch.tensor([int(f.label_id) for f in features], dtype=torch.float)
+        dataset = TensorDataset(all_input_ids, all_input_mask, all_segment_ids, all_label_ids, all_vis)
         if args["sliding_window"] and evaluate:
             return dataset, window_counts
         else:
@@ -898,7 +897,7 @@ class QuestModel:
         self.model.to(self.device)
 
     def _get_inputs_dict(self, batch):
-        inputs = {"input_ids": batch[0], "attention_mask": batch[1], "labels": batch[3]}
+        inputs = {"input_ids": batch[0], "attention_mask": batch[1], "labels": batch[3], "vis": batch[4]}
 
         # XLM, DistilBERT and RoBERTa don't use segment_ids
         if self.args["model_type"] != "distilbert":

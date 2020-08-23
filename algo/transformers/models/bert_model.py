@@ -43,7 +43,7 @@ class BertForSequenceClassification(BertPreTrainedModel):
         self.init_weights()
 
     def forward(self, input_ids=None, attention_mask=None, token_type_ids=None,
-                position_ids=None, head_mask=None, inputs_embeds=None, labels=None):
+                position_ids=None, head_mask=None, inputs_embeds=None, labels=None, vis=None):
 
         outputs = self.bert(input_ids,
                             attention_mask=attention_mask,
@@ -53,7 +53,6 @@ class BertForSequenceClassification(BertPreTrainedModel):
         # Complains if input_embeds is kept
 
         pooled_output = outputs[1]
-
         pooled_output = self.dropout(pooled_output)
         logits = self.classifier(pooled_output)
         logits = F.sigmoid(logits)

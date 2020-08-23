@@ -30,17 +30,37 @@ with open("data/en-zh/train.pickle", 'rb') as f:
 with open("data/en-zh/test.pickle", 'rb') as f:  
     test = pickle.loads(f.read())
 
-train = train[['original', 'translation', 'score']]
-print(train)
-test = test[['original', 'translation', 'score']]
+with open("data/en-zh/train_vis.pickle", 'rb') as f:  
+    vis1 = pickle.loads(f.read())
+
+with open("data/en-zh/test_vis.pickle", 'rb') as f:  
+    vis2 = pickle.loads(f.read())
+# train
+col_name = train.columns.tolist()
+col_name.insert(3,'vis')
+train_vis = train.reindex(columns=col_name)
+train_vis['vis'] = train_vis['vis'].astype(object)
+for idx, v in enumerate(vis1):
+	train_vis['vis'][idx] = v
+# test
+col_name = test.columns.tolist()
+col_name.insert(3,'vis')
+test_vis = test.reindex(columns=col_name)
+test_vis['vis'] = test_vis['vis'].astype(object)
+for idx, v in enumerate(vis2):
+	test_vis['vis'][idx] = v
+
+train = train_vis[['original', 'translation', 'score', 'vis']]
+
+test = test_vis[['original', 'translation', 'score', 'vis']]
 
 train = train.rename(columns={'original': 'text_a', 'translation': 'text_b', 'score': 'labels'}).dropna()
 test = test.rename(columns={'original': 'text_a', 'translation': 'text_b', 'score': 'labels'}).dropna()
 
-train = fit(train, 'labels')
-test = fit(test, 'labels')
-
-
+# train = fit(train, 'labels')
+# test = fit(test, 'labels')
+# print(train)
+print(train)
 if transformer_config["evaluate_during_training"]:
     if transformer_config["n_fold"] > 1:
         test_preds = np.zeros((len(test), transformer_config["n_fold"]))
@@ -78,7 +98,7 @@ else:
     test['predictions'] = model_outputs
 
 
-test = un_fit(test, 'labels')
-test = un_fit(test, 'predictions')
+# test = un_fit(test, 'labels')
+# test = un_fit(test, 'predictions')
 test.to_csv(os.path.join(TEMP_DIRECTORY, RESULT_FILE), header=True, sep='\t', index=False, encoding='utf-8')
 draw_scatterplot(test, 'labels', 'predictions', os.path.join(TEMP_DIRECTORY, RESULT_IMAGE), MODEL_TYPE + " " + MODEL_NAME)
